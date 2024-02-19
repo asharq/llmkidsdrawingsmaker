@@ -13,9 +13,6 @@ client = OpenAI()
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Set your OpenAI API key here
-openai.api_key = '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'
-
 # Set Streamlit page config
 st.set_page_config(page_title="Imaginative Idea Generator for Kids", layout="wide")
 
