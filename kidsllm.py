@@ -14,7 +14,7 @@ client = OpenAI()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Set your OpenAI API key here
-openai.api_key = 'your_api_key_here'
+openai.api_key = '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'
 
 # Set Streamlit page config
 st.set_page_config(page_title="Imaginative Idea Generator for Kids", layout="wide")
@@ -26,18 +26,24 @@ if 'text_prompt' not in st.session_state:
 if 'generated_image_url' not in st.session_state:
     st.session_state['generated_image_url'] = None
 
-# App title and header
-st.title("🎨 Imaginative Idea Generator for Kids 🚀")
+# Function to update the text input field with a random prompt
+def update_random_prompt():
+    random_prompt = random.choice(prompt_suggestions)
+    st.session_state['text_prompt'] = random_prompt
 
-# Placeholder frame for the generated image
-placeholder_frame = st.empty()
+# Function to handle button clicks for generating the image
+def handle_button_clicks():
+    if st.button("🧚 Give me an idea!"):
+        update_random_prompt()
 
-# Shape for the frame
-st.markdown("<div class='frame-shape'></div>", unsafe_allow_html=True)
+    if st.button("🔮 Generate!"):
+        generated_image_url = generate_image_from_prompt(st.session_state['text_prompt'], selected_style)
+        if generated_image_url:
+            st.session_state['generated_image_url'] = generated_image_url
 
 # Function to generate image from prompt
 def generate_image_from_prompt(prompt, style):
-    safety_guard = "This is for a children's story, please ensure the content is appropriate for kids aged 1-4. Do no include any text or words in the image. This will be used to help kids draw and doodle so create this with learning and ability to draw image if kid wants to in mind. The child's prompt is:"
+    safety_guard = "This is for a children's story, please ensure the content is appropriate for kids aged 1-4. Do not include any text or words in the image. This will be used to help kids draw and doodle so create this with learning and ability to draw image if kid wants to in mind. The child's prompt is:"
     full_prompt = f"{safety_guard} {prompt} Style: {style}."
 
     logging.info("Starting image generation process...")
@@ -54,13 +60,26 @@ def generate_image_from_prompt(prompt, style):
             logging.info("Received response from OpenAI API")
             image_url = response.data[0].url
             logging.info(f"Image generated successfully: {image_url}")
-            st.session_state['generated_image_url'] = image_url
             st.success('🎉 Image generated successfully!')
             return image_url
+        except openai.error.InvalidRequestError as e:
+            logging.error(f"Invalid prompt. Please try again with a different prompt. Error: {e}", exc_info=True)
+            st.error("Invalid prompt. Please try again with a different prompt.")
+            return None
         except Exception as e:
             logging.error(f"An error occurred during image generation: {e}", exc_info=True)
             st.error(f"An error occurred: {e}")
             return None
+
+
+# App title and header
+st.title("🎨 Imaginative Idea Generator for Kids 🚀")
+
+# Placeholder frame for the generated image
+placeholder_frame = st.empty()
+
+# Shape for the frame
+st.markdown("<div class='frame-shape'></div>", unsafe_allow_html=True)
 
 # Sketch area for doodling
 st.header("🖍️ Doodle Your Idea")
@@ -77,7 +96,10 @@ sketch = st_canvas(
 )
 
 # Text input for the prompt, using the session state to set its value
-text_prompt = st.text_input("🖋️ Type your imaginative idea here:", value=st.session_state['text_prompt'], key=text_input_key)
+text_prompt = st.text_input("🖋️ Type your imaginative idea here:", value=st.session_state.get('text_prompt', ""), key=text_input_key)
+
+# Update session state with the user's input
+st.session_state['text_prompt'] = text_prompt
 
 # Buttons for selecting image style
 style_options = ["Cartoon", "Watercolor", "Pastel", "Crayon Drawing", "Sticker Style"]
@@ -117,17 +139,11 @@ prompt_suggestions = [
     "An ice cream mountain that never melts and has every flavor"
 ]
 
+# Expanded "Need some inspiration?" section with more prompts
 st.subheader("🌈 Need some inspiration?")
-if st.button("🧚 Give me an idea!"):
-    random_prompt = random.choice(prompt_suggestions)
-    st.session_state['text_prompt'] = random_prompt
 
-    # Button to generate magic
-st.header("🔮 Generate Magic!")
-if st.button("🔮 Generate!"):
-    generated_image_url = generate_image_from_prompt(text_prompt, selected_style)
-    if generated_image_url:
-        st.session_state['generated_image_url'] = generated_image_url
+# Generate magic button
+handle_button_clicks()
 
 # Display the generated image
 if st.session_state['generated_image_url']:
