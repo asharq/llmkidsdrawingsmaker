@@ -14,7 +14,7 @@ client = OpenAI()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Set your OpenAI API key here
-openai.api_key = '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'
+openai.api_key = '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'
 
 # Set Streamlit page config
 st.set_page_config(page_title="Imaginative Idea Generator for Kids", layout="wide")
@@ -62,14 +62,11 @@ def generate_image_from_prompt(prompt, style):
             logging.info(f"Image generated successfully: {image_url}")
             st.success('🎉 Image generated successfully!')
             return image_url
-        except openai.error.InvalidRequestError as e:
-            logging.error(f"Invalid prompt. Please try again with a different prompt. Error: {e}", exc_info=True)
-            st.error("Invalid prompt. Please try again with a different prompt.")
-            return None
-        except Exception as e:
+        except Exception as e:  # Catching a more general exception
             logging.error(f"An error occurred during image generation: {e}", exc_info=True)
             st.error(f"An error occurred: {e}")
             return None
+
 
 
 # App title and header
@@ -96,10 +93,7 @@ sketch = st_canvas(
 )
 
 # Text input for the prompt, using the session state to set its value
-text_prompt = st.text_input("🖋️ Type your imaginative idea here:", value=st.session_state.get('text_prompt', ""), key=text_input_key)
-
-# Update session state with the user's input
-st.session_state['text_prompt'] = text_prompt
+text_prompt = st.text_input("🖋️ Type your imaginative idea here:", value=st.session_state['text_prompt'], key=text_input_key)
 
 # Buttons for selecting image style
 style_options = ["Cartoon", "Watercolor", "Pastel", "Crayon Drawing", "Sticker Style"]
